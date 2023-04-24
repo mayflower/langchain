@@ -5,6 +5,8 @@ import warnings
 from typing import Any, Dict, List, Optional, Union
 
 import aiohttp
+from aiohttp.typedefs import StrOrURL
+from aiohttp.helpers import BasicAuth
 import requests
 
 from langchain.docstore.document import Document
@@ -50,8 +52,14 @@ class WebBaseLoader(BaseLoader):
     requests_kwargs: Dict[str, Any] = {}
     """kwargs for requests"""
 
+    proxy: Optional[StrOrURL] = None
+    """aiohttp proxy server"""
+
+    proxy_auth: Optional[BasicAuth] = None
+    """aio proxy auth"""
+
     def __init__(
-        self, web_path: Union[str, List[str]], header_template: Optional[dict] = None
+        self, web_path: Union[str, List[str]], header_template: Optional[dict] = None, proxy: Optional[StrOrURL] = None, proxy_auth: Optional[BasicAuth] = None
     ):
         """Initialize with webpage path."""
 
@@ -64,6 +72,8 @@ class WebBaseLoader(BaseLoader):
             self.web_paths = web_path
 
         self.session = requests.Session()
+        self.proxy = proxy
+        self.proxy_auth = proxy_auth
         try:
             import bs4  # noqa:F401
         except ImportError:
@@ -98,7 +108,7 @@ class WebBaseLoader(BaseLoader):
             for i in range(retries):
                 try:
                     async with session.get(
-                        url, headers=self.session.headers
+                        url, headers=self.session.headers, proxy=self.proxy, proxy_auth=self.proxy_auth
                     ) as response:
                         return await response.text()
                 except aiohttp.ClientConnectionError as e:
@@ -173,7 +183,7 @@ class WebBaseLoader(BaseLoader):
 
         self._check_parser(parser)
 
-        html_doc = self.session.get(url, **self.requests_kwargs)
+        html_doc = self.session.get(url, proxy=self.proxy, proxy_auth=self.proxy_auth, **self.requests_kwargs)
         html_doc.encoding = html_doc.apparent_encoding
         return BeautifulSoup(html_doc.text, parser)
 
