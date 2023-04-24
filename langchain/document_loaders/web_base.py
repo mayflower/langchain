@@ -183,7 +183,14 @@ class WebBaseLoader(BaseLoader):
 
         self._check_parser(parser)
 
-        html_doc = self.session.get(url, proxy=self.proxy, proxy_auth=self.proxy_auth, **self.requests_kwargs)
+        proxies = None
+        if self.proxy is not None:
+            proxies = {
+                "http": self.proxy,
+                "https": self.proxy,
+            }
+
+        html_doc = self.session.get(url, proxies=proxies, **self.requests_kwargs)
         html_doc.encoding = html_doc.apparent_encoding
         return BeautifulSoup(html_doc.text, parser)
 

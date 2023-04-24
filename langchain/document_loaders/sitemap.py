@@ -51,6 +51,8 @@ class SitemapLoader(WebBaseLoader):
                 remember when setting this method to also copy metadata["loc"]
                 to metadata["source"] if you are using this field
             is_local: whether the sitemap is a local file
+            proxy: proxy url
+            proxy_auth: proxy server authentication
         """
 
         if blocksize is not None and blocksize < 1:
