@@ -3,9 +3,10 @@ import itertools
 import re
 from typing import Any, Callable, Generator, Iterable, List, Optional
 
-from langchain.document_loaders.web_base import WebBaseLoader
-from aiohttp.typedefs import StrOrURL
 from aiohttp.helpers import BasicAuth
+from aiohttp.typedefs import StrOrURL
+
+from langchain.document_loaders.web_base import WebBaseLoader
 from langchain.schema import Document
 
 
@@ -70,7 +71,13 @@ class SitemapLoader(WebBaseLoader):
                 "lxml package not found, please install it with " "`pip install lxml`"
             )
 
-        super().__init__(web_path, proxy=proxy, proxy_auth=proxy_auth, cookies=cookies, header_template=header_template)
+        super().__init__(
+            web_path,
+            proxy=proxy,
+            proxy_auth=proxy_auth,
+            cookies=cookies,
+            header_template=header_template,
+        )
 
         self.filter_urls = filter_urls
         self.parsing_function = parsing_function or _default_parsing_function

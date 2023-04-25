@@ -5,9 +5,9 @@ import warnings
 from typing import Any, Dict, List, Optional, Union
 
 import aiohttp
-from aiohttp.typedefs import StrOrURL
-from aiohttp.helpers import BasicAuth
 import requests
+from aiohttp.helpers import BasicAuth
+from aiohttp.typedefs import StrOrURL
 
 from langchain.docstore.document import Document
 from langchain.document_loaders.base import BaseLoader
@@ -87,9 +87,14 @@ class WebBaseLoader(BaseLoader):
             )
 
         headers = header_template or default_header_template
-        if "User-Agent" not in headers or headers["User-Agent"] == "" or headers["User-Agent"] == None:
+        if (
+            "User-Agent" not in headers
+            or headers["User-Agent"] == ""
+            or headers["User-Agent"] == None
+        ):
             try:
                 from fake_useragent import UserAgent
+
                 headers["User-Agent"] = UserAgent().random
             except ImportError:
                 logger.info(
@@ -113,11 +118,16 @@ class WebBaseLoader(BaseLoader):
     async def _fetch(
         self, url: str, retries: int = 3, cooldown: int = 2, backoff: float = 1.5
     ) -> str:
-        async with aiohttp.ClientSession(cookies=self.session.cookies.get_dict()) as session:
+        async with aiohttp.ClientSession(
+            cookies=self.session.cookies.get_dict()
+        ) as session:
             for i in range(retries):
                 try:
                     async with session.get(
-                        url, headers=self.session.headers, proxy=self.proxy, proxy_auth=self.proxy_auth
+                        url,
+                        headers=self.session.headers,
+                        proxy=self.proxy,
+                        proxy_auth=self.proxy_auth,
                     ) as response:
                         return await response.text()
                 except aiohttp.ClientConnectionError as e:
