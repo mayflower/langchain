@@ -1,6 +1,7 @@
 """Loader that fetches a sitemap and loads those URLs."""
 import itertools
 import re
+import itertools
 from typing import Any, Callable, Generator, Iterable, List, Optional
 
 from aiohttp.helpers import BasicAuth
@@ -23,7 +24,6 @@ def _batch_block(iterable: Iterable, size: int) -> Generator[List[dict], None, N
     while item := list(itertools.islice(it, size)):
         yield item
 
-
 class SitemapLoader(WebBaseLoader):
     """Loader that fetches a sitemap and loads those URLs."""
 
@@ -40,6 +40,8 @@ class SitemapLoader(WebBaseLoader):
         proxy: Optional[StrOrURL] = None,
         proxy_auth: Optional[BasicAuth] = None,
         cookies: Optional[dict] = None,
+        blocksize: Optional[int] = None,
+        blocknum: Optional[int] = None,
     ):
         """Initialize with webpage path and optional filter URLs.
 
@@ -56,6 +58,8 @@ class SitemapLoader(WebBaseLoader):
             is_local: whether the sitemap is a local file
             proxy: proxy url
             proxy_auth: proxy server authentication
+            blocksize: number of sitemap location per block
+            blocknum: the number of the block that should be loaded - zero indexed
         """
 
         if blocksize is not None and blocksize < 1:
@@ -78,6 +82,9 @@ class SitemapLoader(WebBaseLoader):
             cookies=cookies,
             header_template=header_template,
         )
+
+        self.blocksize = blocksize
+        self.blocknum = blocknum
 
         self.filter_urls = filter_urls
         self.parsing_function = parsing_function or _default_parsing_function
@@ -136,7 +143,8 @@ class SitemapLoader(WebBaseLoader):
 
         els = self.parse_sitemap(soup)
 
-        if self.blocksize is not None:
+        if self.blocksize is not None and self.blocknum is not None:
+            total_item_count = len(els)
             elblocks = list(_batch_block(els, self.blocksize))
             blockcount = len(elblocks)
             if blockcount - 1 < self.blocknum:
