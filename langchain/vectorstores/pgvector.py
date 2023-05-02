@@ -4,6 +4,7 @@ from __future__ import annotations
 import enum
 import logging
 import uuid
+import os
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type
 
 import sqlalchemy
@@ -19,7 +20,7 @@ from langchain.vectorstores.base import VectorStore
 Base = declarative_base()  # type: Any
 
 
-ADA_TOKEN_COUNT = 1536
+ADA_TOKEN_COUNT = int(os.getenv("PGVECTOR_ADA_TOKEN_COUNT", default="1536"))
 _LANGCHAIN_DEFAULT_COLLECTION_NAME = "langchain"
 
 
